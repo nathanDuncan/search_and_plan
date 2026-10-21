@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 ### A*
 
 class AStarPlanner():
-    def __init__(self, ox, oy, resolution, heuristic, show_animation):
+    def __init__(self, ox, oy, resolution, edge_model, heuristic, show_animation):
         """
         Initialize grid map for a star planning
 
@@ -14,6 +14,7 @@ class AStarPlanner():
         rr: robot radius[m]
         """
 
+        self.edge_model = edge_model
         self.heuristic_selection = heuristic
         self.resolution = resolution
         self.min_x, self.min_y = 0, 0
@@ -38,7 +39,9 @@ class AStarPlanner():
 
     def planning(self, sx, sy, gx, gy):
         """
-        A star path search
+        A star path search adapted from ELEC 844 lecture slides.
+
+        For ease of implementation the environment is not structured as a true graph.
 
         input:
             s_x: start x position [m]
@@ -50,74 +53,121 @@ class AStarPlanner():
             rx: x position list of the final path
             ry: y position list of the final path
         """
-
-        start_node = self.Node(self.calc_xy_index(sx, self.min_x),
+        
+        ### Initialization ###
+        start_node = self.Vertex(self.calc_xy_index(sx, self.min_x),
                                self.calc_xy_index(sy, self.min_y), 0.0, -1)
-        self.goal_node = self.Node(self.calc_xy_index(gx, self.min_x),
+        self.goal_node = self.Vertex(self.calc_xy_index(gx, self.min_x),
                               self.calc_xy_index(gy, self.min_y), 0.0, -1)
 
-        open_set, closed_set = dict(), dict()
-        open_set[self.calc_grid_index(start_node)] = start_node
+        Q = dict()
 
-        while True:
-            if len(open_set) == 0:
-                print("Open set is empty..")
-                break
+        ### Line 1 ###
+        self.start_node.cost = 0
 
-            c_id = min(
-                open_set,
-                key=lambda o: open_set[o].cost + self.calc_heuristic(goal_node,
-                                                                     open_set[
-                                                                         o]))
-            current = open_set[c_id]
+        ### Line 2-5 ###
+        """
+        In the algorithm discussed in class, the open queue is defined as ALL unexplored verticies.
+        In this implementation, the open set is generated dyanmically as the algorithm expands outward.
+        In essence, we only search the frontier, not the whole unexplored workspace.
+        Therefore, Lines 4 and 5 will be modified and referenced later.
+        """
 
-            # show graph
-            if self.show_animation:  # pragma: no cover
-                plt.plot(self.calc_grid_position(current.x, self.min_x),
-                         self.calc_grid_position(current.y, self.min_y), "xc")
-                # for stopping simulation with the esc key.
-                plt.gcf().canvas.mpl_connect('key_release_event',
-                                             lambda event: [exit(
-                                                 0) if event.key == 'escape' else None])
-                if len(closed_set.keys()) % 10 == 0:
-                    plt.pause(0.001)
+        ### Line 6 ###
+        while not Q.empty:
 
-            if current.x == self.goal_node.x and current.y == self.goal_node.y:
-                print("Find goal")
-                self.goal_node.parent_index = current.parent_index
-                self.goal_node.cost = current.cost
-                break
+            ### Line 7 ###
+            v_next = min(
+                Q,
+                key=lambda v: Q[v].cost + self.calc_heuristic(Q[v]))
+            
+            ### Line 8-9 ###
+            """
+            Implicitly defined in all four available heuristics
+            """
 
-            # Remove the item from the open set
-            del open_set[c_id]
+            ### Line 10 ###
+            for edge in self.edge_model:
+                u = self.Vertex(edge[0],
+                              edge[1], math.inf, -1)
 
-            # Add it to the closed set
-            closed_set[c_id] = current
+                ### Line 11 ###
+                # a new node should belong to the open queue unless it has already been explored or is an obstacle
 
-            # expand_grid search grid based on motion model
-            for i, _ in enumerate(self.motion):
-                node = self.Node(current.x + self.motion[i][0],
-                                 current.y + self.motion[i][1],
-                                 current.cost + self.motion[i][2], c_id)
-                n_id = self.calc_grid_index(node)
+                ### Line 12 ###
+                cost_new = v_next.cost + edge[2]
 
-                # If the node is not safe, do nothing
-                if not self.verify_node(node):
-                    continue
+                ### Line 13 ###
+                if cost_new < u.cost:
+                    u.cost = cost_new
+            
+            ### Line 15 ###
+            del Q[v_next]
+            
 
-                if n_id in closed_set:
-                    continue
 
-                if n_id not in open_set:
-                    open_set[n_id] = node  # discovered a new node
-                else:
-                    if open_set[n_id].cost > node.cost:
-                        # This path is the best until now. record it
-                        open_set[n_id] = node
+        #  = dict(), dict()
+        # open_set[self.calc_grid_index(start_node)] = start_node
 
-        rx, ry = self.calc_final_path(self.goal_node, closed_set)
+        # while True:
+        #     if len(open_set) == 0:
+        #         print("Open set is empty..")
+        #         break
 
-        return rx, ry
+        #     c_id = min(
+        #         open_set,
+        #         key=lambda o: open_set[o].cost + self.calc_heuristic(goal_node,
+        #                                                              open_set[
+        #                                                                  o]))
+        #     current = open_set[c_id]
+
+        #     # show graph
+        #     if self.show_animation:  # pragma: no cover
+        #         plt.plot(self.calc_grid_position(current.x, self.min_x),
+        #                  self.calc_grid_position(current.y, self.min_y), "xc")
+        #         # for stopping simulation with the esc key.
+        #         plt.gcf().canvas.mpl_connect('key_release_event',
+        #                                      lambda event: [exit(
+        #                                          0) if event.key == 'escape' else None])
+        #         if len(closed_set.keys()) % 10 == 0:
+        #             plt.pause(0.001)
+
+        #     if current.x == self.goal_node.x and current.y == self.goal_node.y:
+        #         print("Find goal")
+        #         self.goal_node.parent_index = current.parent_index
+        #         self.goal_node.cost = current.cost
+        #         break
+
+        #     # Remove the item from the open set
+        #     del open_set[c_id]
+
+        #     # Add it to the closed set
+        #     closed_set[c_id] = current
+
+        #     # expand_grid search grid based on motion model
+        #     for i, _ in enumerate(self.motion):
+        #         node = self.Node(current.x + self.motion[i][0],
+        #                          current.y + self.motion[i][1],
+        #                          current.cost + self.motion[i][2], c_id)
+        #         n_id = self.calc_grid_index(node)
+
+        #         # If the node is not safe, do nothing
+        #         if not self.verify_node(node):
+        #             continue
+
+        #         if n_id in closed_set:
+        #             continue
+
+        #         if n_id not in open_set:
+        #             open_set[n_id] = node  # discovered a new node
+        #         else:
+        #             if open_set[n_id].cost > node.cost:
+        #                 # This path is the best until now. record it
+        #                 open_set[n_id] = node
+
+        # rx, ry = self.calc_final_path(self.goal_node, closed_set)
+
+        # return rx, ry
 
     def calc_heuristic(self, v):
         # i. Zero Heuristic
