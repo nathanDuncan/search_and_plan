@@ -65,11 +65,91 @@ env_1c = {
     'goal': (15, 10),
 }
 
+env_4a = {
+    'world_x': 19,
+    'world_y': 19,
+    'obstacles': [
+        # Cup obstacle
+        [11,  8],
+        [12,  8],
+        [13,  8],
+        [14,  8],
+        [14,  9],
+        [14,  10],
+        [14,  11],
+        [14,  12],
+        [13,  12],
+        [12,  12],
+        [11,  12],
+    ],
+    'start': (3, 10),
+    'goal': (17, 10),
+}
+
+env_4b = {
+    'world_x': 19,
+    'world_y': 19,
+    'obstacles': [
+        # Line obstacle
+        [ 6,  7],
+        [ 6,  8],
+        [ 6,  9],
+        [ 6, 10],
+        [ 6, 11],
+        [ 6, 12],
+        # Cup obstacle
+        [11,  8],
+        [12,  8],
+        [13,  8],
+        [14,  8],
+        [14,  9],
+        [14,  10],
+        [14,  11],
+        [14,  12],
+        [13,  12],
+        [12,  12],
+        [11,  12],
+    ],
+    'start': (3, 10),
+    'goal': (17, 10),
+}
+
+env_4c = {
+    'world_x': 19,
+    'world_y': 19,
+    'obstacles': [
+        # Line obstacle
+        [ 6,  7],
+        [ 6,  8],
+        [ 6,  9],
+        [ 6, 10],
+        [ 6, 11],
+        [ 6, 12],
+        # Cup obstacle
+        [11,  8],
+        [12,  8],
+        [13,  8],
+        [14,  8],
+        # [14,  9],
+        [14,  10],
+        [14,  11],
+        [14,  12],
+        [13,  12],
+        [12,  12],
+        [11,  12],
+    ],
+    'start': (3, 10),
+    'goal': (17, 10),
+}
+
 # Dictionary mapping setting names to their respective configurations
 environments = {
     '1a': env_1a,
     '1b': env_1b,
     '1c': env_1c,
+    '4a': env_4a,
+    '4b': env_4b,
+    '4c': env_4c,
 }
 
 class Environment:

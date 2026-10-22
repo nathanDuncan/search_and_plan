@@ -34,7 +34,7 @@ def main():
     print(__file__ + " start!!")
 
     ### Load Environment ###
-    selected_env = '1b'
+    selected_env = '4b'
     flip_start_goal = False
     heuristic = "euclidean"
 
