@@ -55,10 +55,21 @@ env_1b = {
     'goal': (15, 10),
 }
 
+env_1c = {
+    'world_x': 19,
+    'world_y': 19,
+    'obstacles': [
+        [0, 0],
+    ],
+    'start': (5, 10),
+    'goal': (15, 10),
+}
+
 # Dictionary mapping setting names to their respective configurations
 environments = {
     '1a': env_1a,
     '1b': env_1b,
+    '1c': env_1c,
 }
 
 class Environment:

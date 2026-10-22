@@ -34,54 +34,79 @@ def main():
     print(__file__ + " start!!")
 
     ### Load Environment ###
-    selected_env = '1b'  # Change to '1b' or pass custom settings as needed
+    selected_env = '1b'
+    flip_start_goal = False
+    heuristic = "euclidean"
+
     env = get_environment(selected_env)
-    sx, sy = env.sx, env.sy
-    gx, gy = env.gx, env.gy
-    grid_size = env.grid_size
-    ox, oy = env.ox, env.oy
+    sx, sy = int(env.sx), int(env.sy)
+    gx, gy = int(env.gx), int(env.gy)
+    ox, oy = [int(x) for x in env.ox], [int(y) for y in env.oy]
+    obstacle_set = set(zip(ox, oy))
 
-    ### Plot Environment ###
-    if show_animation:  # pragma: no cover
-        ax = plt.gca()
+    # Define explicit world bounds
+    min_x, max_x = 1, int(env.world_x)
+    min_y, max_y = 1, int(env.world_y)
 
-        # Gridlines spaced by 1 unit at half numbers (-0.5, 0.5, 1.5, 2.5, ...)
-        # half_ticks_x = [i + 0.5 for i in range(-1, int(env.world_x) + 1)]
-        # half_ticks_y = [i + 0.5 for i in range(-1, int(env.world_y) + 1)]
-        # ax.set_xticks(half_ticks_x, minor=True)
-        # ax.set_yticks(half_ticks_y, minor=True)
-        ax.grid(which="minor", color="lightgray", linestyle="-", linewidth=0.8)
+    ### Pre-plot Canvas for Animation ###
+    fig, ax = plt.subplots(figsize=(8, 8))
 
-        # Major ticks at integer coordinates to label cell centers (0, 1, 2, ...)
-        ax.set_xticks(range(0, int(env.world_x) + 1))
-        ax.set_yticks(range(0, int(env.world_y) + 1))
-        ax.tick_params(which="minor", bottom=False, left=False)
+    # Free space nodes (black dots) within bounds
+    free_x, free_y = [], []
+    for x in range(min_x, max_x + 1):
+        for y in range(min_y, max_y + 1):
+            if (x, y) not in obstacle_set:
+                free_x.append(x)
+                free_y.append(y)
 
-        # Plot outer boundary matching the outer cell edges
-        plt.plot(
-            [-0.5, env.world_x + 0.5, env.world_x + 0.5, -0.5, -0.5],
-            [-0.5, -0.5, env.world_y + 0.5, env.world_y + 0.5, -0.5],
-            "-k",
-            label="Boundary",
-        )
+    ax.scatter(free_x, free_y, c='grey', s=20, zorder=1, label="Free Nodes")
+    ax.scatter(ox, oy, c='white', edgecolors='black', linewidths=1.2, s=35, zorder=4, label="Obstacles")
 
-        plt.plot(ox, oy, "sk", ms=12, mec='gray',label="Obstacles")
-        plt.plot(sx, sy, "og", label="Start")
-        plt.plot(gx, gy, "xb", label="Goal")
-        plt.xlim(-0.5, env.world_x + 0.5)
-        plt.ylim(-0.5, env.world_y + 0.5)
-        plt.axis("equal")
-        # plt.show()
+    # Start and Goal markers
+    ax.scatter(sx, sy, c='green', marker='x', s=120, linewidths=3, zorder=10, label="Start")
+    ax.scatter(gx, gy, c='red', marker='x', s=120, linewidths=3, zorder=10, label="Goal")
+
+    ## Outer boundary adjusted to min_x and min_y
+    ax.plot(
+        [min_x - 0.5, max_x + 0.5, max_x + 0.5, min_x - 0.5, min_x - 0.5],
+        [min_y - 0.5, min_y - 0.5, max_y + 0.5, max_y + 0.5, min_y - 0.5],
+        "-k", linewidth=1.5, zorder=1
+    )
+
+    # Axis limits and ticks starting from min_x and min_y
+    ax.set_xticks(range(min_x, max_x + 1))
+    ax.set_yticks(range(min_y, max_y + 1))
+    ax.set_xlim(min_x - 1, max_x + 1)
+    ax.set_ylim(min_y - 1, max_y + 1)
+    ax.set_aspect("equal")
+
+    # Connect escape key to quit animation early
+    plt.gcf().canvas.mpl_connect('key_release_event',
+                                 lambda event: [exit(0) if event.key == 'escape' else None])
 
     ### Solve Planning Problem ###
-    a_star = AStarPlanner(ox, oy, env.edge_model, 'euclidean', show_animation)
+    a_star = AStarPlanner(
+        ox=ox,
+        oy=oy,
+        edge_model=env.edge_model,
+        heuristic=heuristic,
+        show_animation=show_animation,
+        min_x=min_x,
+        max_x=max_x,
+        min_y=min_y,
+        max_y=max_y,
+    )
     rx, ry = a_star.planning(sx, sy, gx, gy)
 
-    ### Plot Results ###
-    if show_animation:  # pragma: no cover
-        plt.plot(rx, ry, "-r")
-        plt.pause(0.001)
-        plt.show()
+    ### Plot Final Path ###
+    if rx and ry:
+        ax.plot(rx, ry, color='red', linewidth=2.5, zorder=5, label="Final Path")
+        ax.scatter(rx, ry, c='red', s=45, zorder=6, label="Path Nodes")
+        # ax.legend(loc='upper right', bbox_to_anchor=(1.28, 1))
+        plt.draw()        # Force matplotlib to update the canvas
+        plt.pause(0.001)  # Flush the GUI event queue so the red line actually renders
+
+    plt.show()            # Keep the final window open
 
 
 if __name__ == '__main__':
