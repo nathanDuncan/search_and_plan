@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 
 from environments import get_environment
-from A-star import AStarPlanner
+from AStar import AStarPlanner
 
 show_animation = True
 
@@ -46,10 +46,10 @@ def main():
         ax = plt.gca()
 
         # Gridlines spaced by 1 unit at half numbers (-0.5, 0.5, 1.5, 2.5, ...)
-        half_ticks_x = [i + 0.5 for i in range(-1, int(env.world_x) + 1)]
-        half_ticks_y = [i + 0.5 for i in range(-1, int(env.world_y) + 1)]
-        ax.set_xticks(half_ticks_x, minor=True)
-        ax.set_yticks(half_ticks_y, minor=True)
+        # half_ticks_x = [i + 0.5 for i in range(-1, int(env.world_x) + 1)]
+        # half_ticks_y = [i + 0.5 for i in range(-1, int(env.world_y) + 1)]
+        # ax.set_xticks(half_ticks_x, minor=True)
+        # ax.set_yticks(half_ticks_y, minor=True)
         ax.grid(which="minor", color="lightgray", linestyle="-", linewidth=0.8)
 
         # Major ticks at integer coordinates to label cell centers (0, 1, 2, ...)
@@ -71,17 +71,17 @@ def main():
         plt.xlim(-0.5, env.world_x + 0.5)
         plt.ylim(-0.5, env.world_y + 0.5)
         plt.axis("equal")
-        plt.show()
+        # plt.show()
 
     ### Solve Planning Problem ###
-    a_star = AStarPlanner(ox, oy, grid_size, show_animation)
+    a_star = AStarPlanner(ox, oy, env.edge_model, 'euclidean', show_animation)
     rx, ry = a_star.planning(sx, sy, gx, gy)
 
     ### Plot Results ###
-    # if show_animation:  # pragma: no cover
-    #     plt.plot(rx, ry, "-r")
-    #     plt.pause(0.001)
-    #     plt.show()
+    if show_animation:  # pragma: no cover
+        plt.plot(rx, ry, "-r")
+        plt.pause(0.001)
+        plt.show()
 
 
 if __name__ == '__main__':

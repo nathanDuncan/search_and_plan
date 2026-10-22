@@ -107,8 +107,8 @@ class Environment:
         # Grid and robot parameters
         self.grid_size = grid_size
 
-    @staticmethod
-    def get_edge_model():
+    @property
+    def edge_model(self):
         # dx, dy, cost
         edge = [[1, 0, 1],
                   [0, 1, 1],
@@ -118,7 +118,6 @@ class Environment:
                   [-1, 1, math.sqrt(2)],
                   [1, -1, math.sqrt(2)],
                   [1, 1, math.sqrt(2)]]
-
         return edge
 
     @property
