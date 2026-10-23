@@ -7,7 +7,7 @@ author: Nathan Duncan
 import math
 
 # Environment dictionary settings
-env_1a = {
+env_3a = {
     'world_x': 19,
     'world_y': 19,
     'obstacles': [
@@ -27,7 +27,7 @@ env_1a = {
     'goal': (15, 10),
 }
 
-env_1b = {
+env_3b = {
     'world_x': 19,
     'world_y': 19,
     'obstacles': [
@@ -144,8 +144,8 @@ env_4c = {
 
 # Dictionary mapping setting names to their respective configurations
 environments = {
-    '1a': env_1a,
-    '1b': env_1b,
+    '3a': env_3a,
+    '3b': env_3b,
     '1c': env_1c,
     '4a': env_4a,
     '4b': env_4b,
@@ -237,6 +237,26 @@ class Environment:
 def get_environment(setting='1a', grid_size=1.0):
     """Factory function to load an Environment instance."""
     return Environment(setting=setting, grid_size=grid_size)
+
+def get_obstacle_changes(old_obstacles, new_obstacles):
+    """
+    Computes added and removed obstacles between two sets of (x, y) coordinates.
+
+    Parameters:
+        old_obstacles: set or list of (x, y) tuples
+        new_obstacles: set or list of (x, y) tuples
+
+    Returns:
+        added_obstacles: set of (x, y) coordinates newly blocked
+        removed_obstacles: set of (x, y) coordinates newly freed
+    """
+    old_set = set(old_obstacles)
+    new_set = set(new_obstacles)
+
+    added_obstacles = new_set - old_set      # Present in new, but not in old
+    removed_obstacles = old_set - new_set    # Present in old, but not in new
+
+    return added_obstacles, removed_obstacles
 
 
 if __name__ == '__main__':
