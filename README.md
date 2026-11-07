@@ -7,3 +7,7 @@ Just run
 '''
 python3 path_plan_main.py
 '''
+
+# Sampling-Based Planning
+
+This folder contains experiments related to variants of rapidly exploring random trees.
