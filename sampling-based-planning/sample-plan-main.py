@@ -1,4 +1,5 @@
 from RRT import RRTPlanner
+from RRTConnect import RRTConnectPlanner
 from continuous_environments import Environment
 
 import numpy as np
@@ -35,7 +36,6 @@ def run_study(env_setting='1_l25', num_trials=50):
     print(f"Starting {num_trials} trials on environment '{env_setting}'...")
 
     for trial in range(1, num_trials + 1):
-        # Disable animation during benchmarking for high execution speed
         planner = RRTPlanner(
             obstacles=env.obstacles,
             min_x=env.min_x,
@@ -57,7 +57,7 @@ def run_study(env_setting='1_l25', num_trials=50):
                 f"Length: {stats['path_length']:.2f}")
 
 
-    # Print requested statistics
+    # Print stats
     print_summary_stats("Total Iterations", iterations_list)
     print_summary_stats("Vertices Added", vertices_list)
     print_summary_stats("Path Length (m)", path_length_list)
@@ -65,21 +65,21 @@ def run_study(env_setting='1_l25', num_trials=50):
     # Plot histograms
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
 
-    # 1. Total Iterations Histogram
+    # Total Iterations Histogram
     axes[0].hist(iterations_list, bins='auto', color='skyblue', edgecolor='black', alpha=0.7)
     axes[0].set_title("Total Iterations")
     axes[0].set_xlabel("Iterations")
     axes[0].set_ylabel("Frequency")
     axes[0].grid(axis='y', linestyle='--', alpha=0.7)
 
-    # 2. Vertices Added Histogram
+    # Vertices Added Histogram
     axes[1].hist(vertices_list, bins='auto', color='salmon', edgecolor='black', alpha=0.7)
     axes[1].set_title("Vertices Added to Tree")
     axes[1].set_xlabel("Number of Vertices")
     axes[1].set_ylabel("Frequency")
     axes[1].grid(axis='y', linestyle='--', alpha=0.7)
 
-    # 3. Path Length Histogram
+    # Path Length Histogram
     axes[2].hist(path_length_list, bins='auto', color='mediumseagreen', edgecolor='black', alpha=0.7)
     axes[2].set_title("Path Length")
     axes[2].set_xlabel("Length (m)")
@@ -93,25 +93,35 @@ def run_study(env_setting='1_l25', num_trials=50):
 def main():
     print(__file__ + " start!!")
 
-    run_study(env_setting='1_l25', num_trials=500)
-    return
+    # run_study(env_setting='1_l25', num_trials=500)
+    # return
 
-    # 1. Environment holds pure workspace definitions
-    env = Environment('2c')
+    # Environment selection
+    env = Environment('1_l25')
 
-    # 2. Planner holds search parameters (eta, eps, collision resolution)
-    planner = RRTPlanner(
+    # Planner holds search parameters (eta, eps, collision resolution)
+    # planner = RRTPlanner(
+    #     show_animation=True,
+    #     obstacles=env.obstacles,
+    #     min_x=env.min_x,
+    #     max_x=env.max_x,
+    #     min_y=env.min_y,
+    #     max_y=env.max_y,
+    #     eta=2.5,
+    #     eps=0.01
+    # )
+
+    planner = RRTConnectPlanner(
         show_animation=True,
         obstacles=env.obstacles,
         min_x=env.min_x,
         max_x=env.max_x,
         min_y=env.min_y,
         max_y=env.max_y,
-        eta=2.5,
-        eps=0.01
+        eta=2.5
     )
 
-    # 3. Execute
+    # Execute
     rx, ry, stats = planner.planning(env.sx, env.sy, env.gx, env.gy)
 
     print("Planning Complete!")

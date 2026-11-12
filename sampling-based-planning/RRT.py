@@ -150,7 +150,7 @@ class RRTPlanner:
 
         return rx, ry, stats
 
-    def Sample(self, eps):
+    def Sample(self, eps=0):
         """ Sample function (lecture7_handout slide 38) """
         ### Line 1 ###
         p = random.uniform(0, 1)
